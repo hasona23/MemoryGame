@@ -1,0 +1,22 @@
+﻿@using Models
+@if (Card != null)
+{
+    <div id="memory_card" class="card @(Card.Solved?"solved":"not_solved")"  @onclick="@(()=>OnClick?.Invoke())">
+        <div class="card-body d-flex align-items-center justify-content-center">
+            <h3>
+                @(IsVisible || Card.Solved ? Card.Title : PLACE_HOLDER)
+            </h3>
+        </div>
+    </div>
+}
+@code {
+    [Parameter]
+    public Card? Card { get; set; }
+    [Parameter]
+    public bool IsVisible { get; set; }
+    [Parameter]
+    public Action? OnClick { get; set; }
+   
+
+    const string PLACE_HOLDER = "CARD";
+}

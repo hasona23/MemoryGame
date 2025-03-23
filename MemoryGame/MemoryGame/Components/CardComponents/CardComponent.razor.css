@@ -1,0 +1,36 @@
+﻿
+#memory_card {
+    margin: 5px;
+    min-height: 100px;
+    min-width: 100px;
+}
+
+#memory_card.not_solved:hover {
+    transform: scale(1.05);
+    background-color: antiquewhite;
+}
+
+#memory_card.solved {
+    cursor: default;
+    
+ 
+    animation:  3s 1 forwards disable_card;
+}
+
+@keyframes disable_card {
+    from {
+        background-color:white;
+        text-decoration-line:none
+    }
+
+    to {
+       background-color:lightslategrey;
+       text-decoration-line:line-through;
+    }
+}
+
+#memory_card.not_solved {
+    cursor: pointer;
+}
+
+

@@ -1,0 +1,27 @@
+﻿@page "/NewGame"
+@using Models
+@rendermode InteractiveServer
+
+
+<h3>NewGame</h3>
+
+<MemoryGame.Components.CardComponents.Deck Cards="@cards"></MemoryGame.Components.CardComponents.Deck>
+
+<p>Selected: @msg</p>
+
+@code {
+
+    private List<Models.Card> cards = new();
+    private string msg = "";
+    const int CARDS_AMOUNT = 8;
+    // Change this to a method or property with get/set
+
+    protected override void OnInitialized()
+    {
+
+        cards = Card.GetStartingDeck(CARDS_AMOUNT).Select(title => new Card(title)).ToList();
+        base.OnInitialized();
+    }
+
+   
+}

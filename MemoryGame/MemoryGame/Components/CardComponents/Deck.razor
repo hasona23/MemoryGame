@@ -1,0 +1,73 @@
+﻿@using MemoryGame.Models
+<div class="container">
+    @if(Cards  != null)
+    {
+        <div class="row">
+            @for (int i = 0; i < Cards.Count; i++)
+            {
+                var index = i;
+
+                @if(i % SideLength == 0 && i > 0)
+                {
+                    @:</div><div class="row">
+                }
+
+                <div class="col" style="padding: 5px;">
+                    <CardComponent IsVisible="@(i == first || i == second)" 
+                    Card="@Cards[i]" 
+                    OnClick="@(async ()=>await Choose(index))">
+                    </CardComponent>
+                </div>
+            }
+        </div>
+    }
+</div>
+@code {
+    [Parameter]
+    public List<Card>? Cards { get; set; }
+    [Parameter]
+    public int SideLength { get; set; } = 3;
+    private int first = -1;
+    private int second = -1;
+    private bool IsChoosing;
+    private async Task Choose(int choiceIndex)
+    {
+        if (Cards == null)
+            return;
+        if (!IsChoosing && !Cards[choiceIndex].Solved)
+        {
+            if (first == -1)
+            {
+                first = choiceIndex;
+            }
+            else if (choiceIndex == first)
+            {
+                first = -1;
+            }
+            else
+            {
+                second = choiceIndex;
+            }
+        }
+        if (first != -1 && second != -1)
+        {
+            IsChoosing = true;
+            StateHasChanged();
+            await Task.Delay(TimeSpan.FromSeconds(1));
+            if (Cards[first].Title == Cards[second].Title && first != second)
+            {
+
+
+                Cards[first].Solved = true;
+                Cards[second].Solved = true;
+
+            }
+
+            first = -1;
+            second = -1;
+            IsChoosing = false;
+        }
+        StateHasChanged();
+
+    }
+}
