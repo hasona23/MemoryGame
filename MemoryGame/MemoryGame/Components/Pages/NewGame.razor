@@ -1,26 +1,111 @@
 ﻿@page "/NewGame"
 @using Microsoft.AspNetCore.Authorization
+@using System.Diagnostics
+@using Microsoft.AspNetCore.Identity
+@using System.Security.Claims
+@inject AuthenticationStateProvider authenticationStateProvider
+@inject Microsoft.EntityFrameworkCore.IDbContextFactory<MemoryGame.Data.AppDbContext> dbFacotry
+@inject UserManager<GameUser> userManager
 @rendermode InteractiveServer
 @attribute [Authorize]
 
 <h3>NewGame</h3>
+@if (_isPlaying)
+{
+    <h3>@elapsed - @_isPlaying @(deck!=null?deck.Solved():"mohsen")</h3>
+    <MemoryGame.Components.CardComponents.Deck @ref="@deck" Cards="@cards" IsPlaying="@(!_isTimeUp)" SideLength="(int)MathF.Sqrt(CARDS_AMOUNT*2)">
 
-<MemoryGame.Components.CardComponents.Deck Cards="@cards"></MemoryGame.Components.CardComponents.Deck>
+    </MemoryGame.Components.CardComponents.Deck>
+}
 
-<p>Selected: @msg</p>
+@if (!_isPlaying)
+{
+    <button class="btn btn-info" @onclick="@(()=>StartGame())">START</button>
+}
 
 @code {
 
     private List<Models.Card> cards = new();
     private string msg = "";
-    const int CARDS_AMOUNT = 8;
+    const int CARDS_AMOUNT = 2;
+    const int DurationSeconds = CARDS_AMOUNT*5;
+
+    int elapsed;
+    private bool _isPlaying = false;
+    private bool _isTimeUp = false;
+    MemoryGame.Components.CardComponents.Deck deck;
+    private CancellationTokenSource cts;
+
     // Change this to a method or property with get/set
 
     protected override void OnInitialized()
     {
-        cards = Card.GetStartingDeck(CARDS_AMOUNT).Select(title => new Card(title)).ToList();
+        // Start only when the game starts
+
+        elapsed = DurationSeconds;
         base.OnInitialized();
     }
 
-   
+
+
+
+    private async Task StartGame()
+    {
+        cards = Card.GetStartingDeck(CARDS_AMOUNT).Select(title => new Card(title)).ToList();
+
+        _isPlaying = true;
+        elapsed = DurationSeconds;
+        cts = new CancellationTokenSource();
+
+        while (elapsed > 0 && _isPlaying )
+        {
+            if (deck != null && deck.Solved())
+                break;
+            await Task.Delay(1000, cts.Token); // Delay 1 second
+            elapsed--;
+
+            await InvokeAsync(StateHasChanged);
+        }
+        if (elapsed == 0 || (deck != null && deck.Solved()))
+        {
+            await EndGame(deck.Solved());
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task EndGame(bool wonGame)
+    {
+
+        cts?.Cancel();
+        _isPlaying = false;
+        AuthenticationState authenticationState = await authenticationStateProvider.GetAuthenticationStateAsync();
+        GameRecord record = new GameRecord();
+        if(authenticationState.User.Identity != null && authenticationState.User.Identity.IsAuthenticated)
+        {
+            string email = authenticationState.User.Identity.Name;
+            var user = await userManager.FindByNameAsync(authenticationState.User.Identity.Name);
+            if (user != null)
+            {
+                record.UserId = user.Id;
+                record.PlayedAt = DateTime.Now;
+                record.IsWon = wonGame;
+                if (record.IsWon)
+                    user.Score += 5;
+                Console.WriteLine("USER:" + user.Id);
+                using (var context = await dbFacotry.CreateDbContextAsync())
+                {
+                    await context.GameRecords.AddAsync(record);
+                    context.Users.Update(user);
+                    await context.SaveChangesAsync();
+                    Console.WriteLine("SAVED GAME RECORD");
+                }
+            }
+        }
+
+       
+
+
+        await InvokeAsync(StateHasChanged);
+    }
+
 }

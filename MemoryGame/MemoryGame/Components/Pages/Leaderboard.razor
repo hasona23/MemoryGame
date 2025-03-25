@@ -1,0 +1,54 @@
+﻿@page "/Leaderboard"
+@inject Microsoft.AspNetCore.Identity.UserManager<GameUser> UserManager;
+@inject AuthenticationStateProvider authenticationStateProvider
+<h3>Leaderboard</h3>
+
+@if (_users != null)
+{
+    <table class="table">
+        <thead >
+            <tr>
+                <th>
+                    RANK
+                </th>
+                <th>
+                    USER_NAME
+                </th>
+                <th>
+                    SCORE
+                </th>
+            </tr>
+        </thead>
+        <tbody >
+            @for(int i =0;i<_users.Count();i++)
+            {
+               
+                    <tr>
+                        <td>
+                            @(i + 1)
+                        </td>
+                    <td>
+                        @_users.ElementAt(i).UserName
+                    </td>
+                    <td>
+                        @_users.ElementAt(i).Score
+                    </td>
+                </tr>
+                
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private IQueryable<GameUserDto> _users= new List<GameUserDto>().AsQueryable();
+   
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        _users = UserManager.Users.ToList().AsQueryable()
+        .Select(user=> new GameUserDto(user.DisplayName,user.Email,user.Score))
+        .OrderByDescending(user=>user.Score);
+    }
+   
+}

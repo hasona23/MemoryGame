@@ -1,0 +1,59 @@
+﻿@page "/GameHistory"
+@using Microsoft.AspNetCore.Authorization
+@using System.Security.Claims
+@inject Microsoft.EntityFrameworkCore.IDbContextFactory<MemoryGame.Data.AppDbContext> dbFactory
+@inject AuthenticationStateProvider authenticationStateProvider
+@attribute [Authorize]
+<h3>GameHistory</h3>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Date
+            </th>
+            <th>
+                Difficulty
+            </th>
+            <th>
+                Won?
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var game in _games)
+        {
+            <tr>
+                <td>
+                    @game.PlayedAt.ToString("dd-MM-yyyy")
+                </td>
+                <td>
+                    @game.Difficulty
+                </td>
+                <td>
+                    @(game.IsWon?"WON":"LOST ")
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+@code {
+    private IQueryable<GameRecordDto> _games = new List<GameRecordDto>().AsQueryable();
+    protected override async Task OnInitializedAsync()
+    {
+        using (var context = await dbFactory.CreateDbContextAsync())
+        {
+            var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
+            if (authState != null)
+            {
+                var user = authState.User;
+                if (user != null && user.Identity != null && user.Identity.IsAuthenticated)
+                {
+                    _games = context.GameRecords.ToList().AsQueryable()
+                    .Where(game => game.UserId == user.FindFirst(ClaimTypes.NameIdentifier).Value)
+                    .Select(game => new GameRecordDto(game.PlayedAt, game.Difficulty, game.IsWon))
+                    .OrderByDescending(game => game.PlayedAt);
+                }
+            }
+        }
+    }
+}

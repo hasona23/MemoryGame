@@ -30,17 +30,26 @@
     private int first = -1;
     private int second = -1;
     private bool IsChoosing;
-    private async Task Choose(int choiceIndex)
+    [Parameter]
+    public bool IsPlaying { get; set; }
+    public bool Solved()
     {
         if (Cards == null)
+            return false;
+        return Cards.Where(c => !c.Solved).Count() == 0;
+    }
+    private async Task Choose(int choiceIndex)
+    {
+        if (Cards == null || !IsPlaying)
             return;
+
         if (!IsChoosing && !Cards[choiceIndex].Solved)
         {
             if (first == -1)
             {
                 first = choiceIndex;
             }
-            else if (choiceIndex == first)
+            else if (choiceIndex == first && second != -1)
             {
                 first = -1;
             }
@@ -53,14 +62,21 @@
         {
             IsChoosing = true;
             StateHasChanged();
-            await Task.Delay(TimeSpan.FromSeconds(1));
-            if (Cards[first].Title == Cards[second].Title && first != second)
+            await Task.Delay(TimeSpan.FromSeconds(.5));
+            try
             {
+                if (Cards[first].Title == Cards[second].Title && first != second)
+                {
 
 
-                Cards[first].Solved = true;
-                Cards[second].Solved = true;
+                    Cards[first].Solved = true;
+                    Cards[second].Solved = true;
 
+                }
+            }
+            catch
+            {
+                Console.WriteLine($"ERROR WAS FOUND WITH \nFIRST_INDEX:{first}\nSECOND_INDEX:{second}\nTOTAL_CARDS:{Cards.Count}");
             }
 
             first = -1;
