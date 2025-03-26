@@ -2,6 +2,11 @@
 @inherits LayoutComponentBase
 @inject SignInManager<GameUser> SignInManager
 @inject NavigationManager navigationManager;
+<html data-bs-theme="dark">
+<head>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+    <script src="js/themeSwitcher.js"></script>
+</head>
 <div class="page">
 
 
@@ -10,18 +15,21 @@
     </div>
     
     <main>
-        <div class="top-row px-4">
+        <div class="top-row px-4 bg-body">
             <AuthorizeView>
                 <Authorized >
-                    <a href="/Account/Manage" >Profile</a> |
-                    <a href="/Account/Logout">Logout</a>
+                    <a style="margin-right:5px;" href="/Account/Manage" >Profile</a>|
+                    <a style="margin-left:5px;" href="/Account/Logout">Logout</a>
                 </Authorized>
                 <NotAuthorized>
                     <a href="Account/Login">Login</a>
                     <a href="Account/Register">Register</a>
                 </NotAuthorized>
             </AuthorizeView>
-            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
+			
+			<button class="btn btn-outline-secondary" style="margin:10px" onclick="themeManager.toggleTheme()" >
+                <i id="themeIcon" class="fas fa-sun"></i> <!-- Default is Sun -->
+            </button>
         </div>
         <article class="content px-4">
             @Body
@@ -34,3 +42,4 @@
     <a href="." class="reload">Reload</a>
     <span class="dismiss">🗙</span>
 </div>
+</html>

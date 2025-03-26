@@ -1,0 +1,8 @@
+﻿#new_game{
+    display:flex;
+   
+    justify-content:center;
+    align-items:center;
+    vertical-align:middle;
+    margin-top:15%;
+}

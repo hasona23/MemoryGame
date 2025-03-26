@@ -1,5 +1,61 @@
 ﻿@page "/"
+@using MemoryGame.Data
+@inject Microsoft.EntityFrameworkCore.IDbContextFactory<AppDbContext> DbContextFactory
+@inject AuthenticationStateProvider AuthProvider
+@inject Microsoft.AspNetCore.Identity.UserManager<GameUser> UserManager
 
-<div style="display: flex; justify-content: center; align-items: center; height:80vh;">
-    <h1>Let The Game Begin</h1>
-</div>
+
+<div class="d-flex flex-column" style="display: flex; justify-content: center; align-items: center; height:80vh;">
+    @if (userDto == null)
+    {
+ 
+            <h1>Let The Game Begin</h1>
+    }
+    else
+    {
+        <h1>Welcome @userDto.UserName</h1>
+       
+        @if(totalGames != 0)
+        {
+           
+            <h3>WINS: @winningGames</h3>
+            
+            <h3>LOSS: @(totalGames-winningGames)</h3>
+           
+            <h3>TOTAL GAMES: @totalGames</h3>
+
+        }
+        else
+        {
+            <h5>NO GAMES PLAYED YET</h5>
+        }
+    }
+ </div>
+
+@code{
+
+    GameUserDto userDto = null;
+    private int totalGames = 0;
+    private int winningGames = 0;
+    protected override async Task OnInitializedAsync()
+    {
+        AuthenticationState authState = await AuthProvider.GetAuthenticationStateAsync();
+        if(authState.User != null && authState.User.Identity != null)
+        {
+            GameUser user = await UserManager.FindByNameAsync(authState.User.Identity.Name);
+            if(user != null)
+            {
+                userDto = new GameUserDto(user.DisplayName,user.Email,user.Score);
+                using(AppDbContext context = await DbContextFactory.CreateDbContextAsync())
+                {
+                    totalGames = context.GameRecords.Where(game=>game.UserId == user.Id).Count();
+                    winningGames = context.GameRecords.Where(game => game.UserId == user.Id && game.IsWon).Count();
+                }
+            }
+        }
+    }
+}
+
+@if (totalGames != 0)
+{
+}

@@ -59,7 +59,7 @@ namespace MemoryGame.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Difficulty = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Difficulty = table.Column<int>(type: "int", nullable: false),
                     PlayedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     IsWon = table.Column<bool>(type: "bit", nullable: false)
                 },

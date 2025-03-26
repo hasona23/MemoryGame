@@ -1,6 +1,7 @@
 ﻿@page "/Leaderboard"
 @inject Microsoft.AspNetCore.Identity.UserManager<GameUser> UserManager;
 @inject AuthenticationStateProvider authenticationStateProvider
+@rendermode InteractiveServer
 <h3>Leaderboard</h3>
 
 @if (_users != null)
@@ -22,11 +23,11 @@
         <tbody >
             @for(int i =0;i<_users.Count();i++)
             {
-               
-                    <tr>
-                        <td>
-                            @(i + 1)
-                        </td>
+
+                <tr>
+                    <td>
+                        @(i + 1)
+                    </td>
                     <td>
                         @_users.ElementAt(i).UserName
                     </td>
@@ -34,21 +35,44 @@
                         @_users.ElementAt(i).Score
                     </td>
                 </tr>
-                
+
             }
         </tbody>
     </table>
+    <div class="d-flex justify-content-center mt-4">
+        <button class="btn btn-primary me-2"
+                @onclick="@(async()=>{_currentPageNumber--;await InvokeAsync(StateHasChanged); await UpdateList();})"
+                disabled="@(_currentPageNumber == 0)">
+            PREV
+        </button>
+
+        <button class="btn btn-primary"
+                @onclick="@(async()=>{_currentPageNumber++;await InvokeAsync(StateHasChanged);await UpdateList();})"
+                disabled="@(_currentPageNumber == _totalPages)">
+            NEXT
+        </button>
+    </div>
 }
 
 @code {
     private IQueryable<GameUserDto> _users= new List<GameUserDto>().AsQueryable();
-   
-    protected override void OnInitialized()
+    private int _currentPageNumber = 0;
+    private int _pageSize = 10;
+    private int _totalPages;
+    protected override async Task OnInitializedAsync()
     {
-        base.OnInitialized();
+        await base.OnInitializedAsync();
+        await UpdateList();
+
+    }
+    private async Task UpdateList()
+    {
         _users = UserManager.Users.ToList().AsQueryable()
-        .Select(user=> new GameUserDto(user.DisplayName,user.Email,user.Score))
-        .OrderByDescending(user=>user.Score);
+        .Select(user => new GameUserDto(user.DisplayName, user.Email, user.Score))
+        .OrderByDescending(user => user.Score)
+        .Skip(_pageSize*_currentPageNumber)
+        .Take(_pageSize);
+        _totalPages = (int)Math.Round(UserManager.Users.Count() / (float)_pageSize);
     }
    
 }

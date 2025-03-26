@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MemoryGame.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250325142653_INITIAL_CREATE")]
+    [Migration("20250325192410_INITIAL_CREATE")]
     partial class INITIAL_CREATE
     {
         /// <inheritdoc />
@@ -33,9 +33,8 @@ namespace MemoryGame.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Difficulty")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("Difficulty")
+                        .HasColumnType("int");
 
                     b.Property<bool>("IsWon")
                         .HasColumnType("bit");

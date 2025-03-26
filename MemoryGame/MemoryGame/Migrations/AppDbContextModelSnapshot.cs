@@ -30,9 +30,8 @@ namespace MemoryGame.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Difficulty")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("Difficulty")
+                        .HasColumnType("int");
 
                     b.Property<bool>("IsWon")
                         .HasColumnType("bit");

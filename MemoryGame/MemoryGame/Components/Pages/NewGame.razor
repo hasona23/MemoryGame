@@ -12,62 +12,91 @@
 <h3>NewGame</h3>
 @if (_isPlaying)
 {
-    <h3>@elapsed - @_isPlaying @(deck!=null?deck.Solved():"mohsen")</h3>
-    <MemoryGame.Components.CardComponents.Deck @ref="@deck" Cards="@cards" IsPlaying="@(!_isTimeUp)" SideLength="(int)MathF.Sqrt(CARDS_AMOUNT*2)">
+    <h3>@elapsed - @difficulty</h3>
+    <MemoryGame.Components.CardComponents.Deck @ref="@deck" Cards="@cards" IsPlaying="@(!_isTimeUp)" >
 
     </MemoryGame.Components.CardComponents.Deck>
+    if (_isEndGame)
+    {
+        <div class="modal fade  @( _isEndGame ? "show d-block" : "" )" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Modal title</h5>
+                        <!--<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>-->
+                    </div>
+                    <div class="modal-body d-flex justify-content-center">
+                        <p>@(_isTimeUp?"TIME IS UP":"CONGRATS")</p>
+                    </div>
+                    <div class="modal-footer justify-content-center d-flex">
+                        <a href="/NewGame" @onclick="()=>_isPlaying=false" class="btn btn-primary" data-bs-dismiss="modal">NEW GAME</a>
+                        <a href="/" class="btn btn-secondary">HOME</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
 }
 
 @if (!_isPlaying)
 {
-    <button class="btn btn-info" @onclick="@(()=>StartGame())">START</button>
+    <span id="new_game">
+        <button class="btn btn-outline-primary" @onclick="@(async()=>await StartGame())" style="margin-right:10px;">START</button>
+        <select class="form-select"  @bind="difficulty" style="max-width:200px">
+            <option value="@Difficulty.Easy">Easy</option>
+            <option value="@Difficulty.Meduim"  >Meduim</option>
+            <option value="@Difficulty.Hard">Hard</option>
+            <option value="@Difficulty.Extreme">Extreme</option>
+        </select>
+    
+    </span>
 }
 
 @code {
 
     private List<Models.Card> cards = new();
-    private string msg = "";
-    const int CARDS_AMOUNT = 2;
-    const int DurationSeconds = CARDS_AMOUNT*5;
+    private Difficulty difficulty =Difficulty.Meduim;
 
     int elapsed;
     private bool _isPlaying = false;
     private bool _isTimeUp = false;
+    private bool _isEndGame = false;
     MemoryGame.Components.CardComponents.Deck deck;
     private CancellationTokenSource cts;
 
     // Change this to a method or property with get/set
 
-    protected override void OnInitialized()
-    {
-        // Start only when the game starts
-
-        elapsed = DurationSeconds;
-        base.OnInitialized();
-    }
-
-
 
 
     private async Task StartGame()
     {
-        cards = Card.GetStartingDeck(CARDS_AMOUNT).Select(title => new Card(title)).ToList();
+        cards = Card.GetStartingDeck(difficulty).Select(title => new Card(title)).ToList();
+
 
         _isPlaying = true;
-        elapsed = DurationSeconds;
+        _isEndGame = false;
+        _isTimeUp = false;
+        elapsed = cards.Count() * 5/2;
         cts = new CancellationTokenSource();
+        if (deck != null)
+            deck.Cards = cards;
 
         while (elapsed > 0 && _isPlaying )
         {
             if (deck != null && deck.Solved())
                 break;
             await Task.Delay(1000, cts.Token); // Delay 1 second
-            elapsed--;
-
+            if (deck != null && !deck.AssessingChoice)
+            { elapsed--; }
+           
+               
+           
             await InvokeAsync(StateHasChanged);
         }
         if (elapsed == 0 || (deck != null && deck.Solved()))
         {
+            _isTimeUp = elapsed == 0;
+
             await EndGame(deck.Solved());
         }
         await InvokeAsync(StateHasChanged);
@@ -77,7 +106,8 @@
     {
 
         cts?.Cancel();
-        _isPlaying = false;
+        // _isPlaying = false;
+        _isEndGame = true;
         AuthenticationState authenticationState = await authenticationStateProvider.GetAuthenticationStateAsync();
         GameRecord record = new GameRecord();
         if(authenticationState.User.Identity != null && authenticationState.User.Identity.IsAuthenticated)

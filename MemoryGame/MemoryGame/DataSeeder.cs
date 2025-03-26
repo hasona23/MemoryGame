@@ -67,20 +67,24 @@ namespace MemoryGame
             }
             appDbContext.SaveChanges();
         }
-        private static string GetRandomDifficulty()
+        private static Difficulty GetRandomDifficulty()
         {
             var rand = new Random();
-            int value = rand.Next(0, 3);
+            int value = rand.Next(0, 4);
             switch (value)
             {
                 case 0:
-                    return "Easy";
+                    return Difficulty.Easy;
 
                 case 1:
-                    return "Hard";
-                default:
-                    return "Meduim";
+                    return Difficulty.Meduim;
+                case 2:
+                    return Difficulty.Hard;
+                case 3:
+                    return Difficulty.Extreme;
+
             }
+            return Difficulty.Meduim;
         }
     }
 }

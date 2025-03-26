@@ -4,7 +4,9 @@
 @inject Microsoft.EntityFrameworkCore.IDbContextFactory<MemoryGame.Data.AppDbContext> dbFactory
 @inject AuthenticationStateProvider authenticationStateProvider
 @attribute [Authorize]
+@rendermode InteractiveServer
 <h3>GameHistory</h3>
+@if(_games != null){
 <table class="table">
     <thead>
         <tr>
@@ -27,7 +29,7 @@
                     @game.PlayedAt.ToString("dd-MM-yyyy")
                 </td>
                 <td>
-                    @game.Difficulty
+                    @(game.Difficulty)
                 </td>
                 <td>
                     @(game.IsWon?"WON":"LOST ")
@@ -36,9 +38,30 @@
         }
     </tbody>
 </table>
+    <div class="d-flex justify-content-center mt-4">
+        <button class="btn btn-primary me-2"
+                @onclick="@(async()=>{_currentPageNumber--;await InvokeAsync(StateHasChanged); await UpdateList();})"
+                disabled="@(_currentPageNumber == 0)">
+            PREV
+        </button>
+
+        <button class="btn btn-primary"
+                @onclick="@(async()=>{_currentPageNumber++;await InvokeAsync(StateHasChanged);await UpdateList();})"
+                disabled="@(_currentPageNumber == _totalPages)">
+            NEXT
+        </button>
+    </div>
+}
 @code {
     private IQueryable<GameRecordDto> _games = new List<GameRecordDto>().AsQueryable();
+    private int _currentPageNumber = 0;
+    private int _pageSize = 10;
+    private int _totalPages;
     protected override async Task OnInitializedAsync()
+    {
+        await UpdateList();
+    }
+    private async Task  UpdateList()
     {
         using (var context = await dbFactory.CreateDbContextAsync())
         {
@@ -51,7 +74,10 @@
                     _games = context.GameRecords.ToList().AsQueryable()
                     .Where(game => game.UserId == user.FindFirst(ClaimTypes.NameIdentifier).Value)
                     .Select(game => new GameRecordDto(game.PlayedAt, game.Difficulty, game.IsWon))
-                    .OrderByDescending(game => game.PlayedAt);
+                    .OrderByDescending(game => game.PlayedAt)
+                    .Skip(_currentPageNumber * _pageSize)
+                    .Take(_pageSize);
+                    _totalPages = (int)Math.Round(context.GameRecords.Count() / (float)_pageSize);
                 }
             }
         }

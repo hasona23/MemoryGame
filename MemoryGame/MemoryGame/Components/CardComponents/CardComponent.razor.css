@@ -1,26 +1,30 @@
 ﻿
 #memory_card {
     margin: 5px;
-    min-height: 100px;
-    min-width: 100px;
-  
+    min-height: 50px;
+    min-width: 50px;
+    
 }
 
 #memory_card.not_solved:hover {
     transform: scale(1.05);
-    background-color: antiquewhite;
+   
 }
-
+#memory_card.chosen{
+    border-color:darkcyan;
+    border-width:5px;
+    border-radius:5px;
+}
 #memory_card.solved {
     cursor: default;
     
  
-    animation:  3s 1 forwards disable_card;
+    animation:  2s 1 forwards disable_card;
 }
 
 @keyframes disable_card {
     from {
-        background-color:white;
+       
         text-decoration-line:none
     }
 

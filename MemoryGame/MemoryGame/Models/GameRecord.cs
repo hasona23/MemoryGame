@@ -6,7 +6,7 @@
 
         public string UserId { get; set; }
         //TODO: CHange difficulty to have enums instead
-        public string Difficulty { get; set; } = "Medium";
+        public Difficulty Difficulty { get; set; }
         public DateTime PlayedAt { get; set; }
         public bool IsWon { get; set; }
 
