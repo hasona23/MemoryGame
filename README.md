@@ -9,7 +9,7 @@ Welcome To the MemoryGame.
 #Tech stack 💻
   - Language: C#
   - Web-Framework: Blazor
-  - Database: Entity-Framework + Sqlite
+  - Database: Entity-Framework + SqlServer
   - Auth & User Management: Identity-Framework
 
 #How to run 🔧
