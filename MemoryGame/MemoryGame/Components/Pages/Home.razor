@@ -40,7 +40,7 @@
     protected override async Task OnInitializedAsync()
     {
         AuthenticationState authState = await AuthProvider.GetAuthenticationStateAsync();
-        if(authState.User != null && authState.User.Identity != null)
+        if(authState?.User?.Identity?.Name != null)
         {
             GameUser user = await UserManager.FindByNameAsync(authState.User.Identity.Name);
             if(user != null)
